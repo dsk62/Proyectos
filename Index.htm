@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuestros Proyectos</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+        input, textarea { width: 100%; margin-bottom: 10px; padding: 8px; box-sizing: border-box; }
+        button { padding: 10px 20px; cursor: pointer; background: #007BFF; color: white; border: none; border-radius: 4px; }
+        .proyecto { border: 1px solid #ccc; padding: 15px; margin-top: 15px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h2>Añadir Proyecto</h2>
+    <input type="text" id="titulo" placeholder="Título de la idea">
+    <textarea id="definicion" placeholder="Definición o notas" rows="3"></textarea>
+    <input type="text" id="webs" placeholder="Accesos a webs (separados por comas)">
+    <input type="date" id="fecha">
+    <button id="guardar">Guardar</button>
+
+    <h2>Nuestras Ideas</h2>
+    <div id="lista-proyectos"></div>
+
+    <script type="module">
+        // Importar las herramientas de Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        // SUSTITUYE ESTO POR EL CÓDIGO QUE TE DARÁ FIREBASE (Paso 2)
+        const firebaseConfig = {
+          apiKey: "TU_API_KEY",
+          authDomain: "TU_PROYECTO.firebaseapp.com",
+          projectId: "TU_PROYECTO",
+          storageBucket: "TU_PROYECTO.appspot.com",
+          messagingSenderId: "TU_SENDER_ID",
+          appId: "TU_APP_ID"
+        };
+
+        // Iniciar base de datos
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const proyectosCol = collection(db, "proyectos");
+
+        // Acción al pulsar el botón Guardar
+        document.getElementById("guardar").onclick = async () => {
+            await addDoc(proyectosCol, {
+                titulo: document.getElementById("titulo").value,
+                definicion: document.getElementById("definicion").value,
+                webs: document.getElementById("webs").value,
+                fecha: document.getElementById("fecha").value
+            });
+            // Limpiar campos
+            document.getElementById("titulo").value = "";
+            document.getElementById("definicion").value = "";
+            document.getElementById("webs").value = "";
+            document.getElementById("fecha").value = "";
+        };
+
+        // Leer datos en tiempo real (se actualiza solo)
+        onSnapshot(proyectosCol, (snapshot) => {
+            const lista = document.getElementById("lista-proyectos");
+            lista.innerHTML = "";
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                lista.innerHTML += `
+                    <div class="proyecto">
+                        <h3>${data.titulo}</h3>
+                        <p>${data.definicion}</p>
+                        <p><strong>Webs:</strong> <a href="${data.webs}" target="_blank">${data.webs}</a></p>
+                        <p><strong>Fecha prevista:</strong> ${data.fecha}</p>
+                    </div>
+                `;
+            });
+        });
+    </script>
+</body>
+</html>
